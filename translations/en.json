@@ -1,0 +1,40 @@
+{
+    "title": "Enhanced People",
+    "config": {
+      "step": {
+        "user": {
+          "title": "Configure a person",
+          "description": "Set up a person with location tracking.",
+          "data": {
+            "person": "Person",
+            "device_tracker": "Device Tracker Entity",
+            "wifi_sensor": "Wi-Fi Sensor",
+            "places_entity": "Places Entity (optional)",
+            "category": "Category"
+          }
+        },
+        "select_category": {
+          "title": "Select or create category",
+          "data": {
+            "existing_category": "Existing Category",
+            "new_category": "New Category Name (optional)"
+          }
+        }
+      },
+      "error": {
+        "invalid_entity": "Entity not found or invalid",
+        "missing_required": "Missing required fields"
+      },
+      "abort": {
+        "already_configured": "This person is already set up."
+      }
+    },
+    "options": {
+      "step": {
+        "init": {
+          "title": "No configurable options available for Enhanced People"
+        }
+      }
+    }
+  }
+  

@@ -1,0 +1,30 @@
+{
+    "step": {
+      "user": {
+        "description": "Set up Enhanced People integration for one person.",
+        "fields": {
+          "person": {
+            "name": "Person",
+            "description": "The person entity (e.g. person.john_doe)"
+          },
+          "device_tracker": {
+            "name": "Device Tracker Entity",
+            "description": "The device_tracker entity used to get GPS location."
+          },
+          "wifi_sensor": {
+            "name": "Wi-Fi Sensor",
+            "description": "Sensor that shows the connected Wi-Fi network SSID."
+          },
+          "places_entity": {
+            "name": "Places Entity (optional)",
+            "description": "Optional sensor with named places (like from iOS Shortcuts)"
+          },
+          "category": {
+            "name": "Category",
+            "description": "Choose or create a category (like Parent or Kid)"
+          }
+        }
+      }
+    }
+  }
+  
