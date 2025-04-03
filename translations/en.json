@@ -1,40 +1,59 @@
 {
-    "title": "Enhanced People",
-    "config": {
-      "step": {
-        "user": {
-          "title": "Configure a person",
-          "description": "Set up a person with location tracking.",
-          "data": {
-            "person": "Person",
-            "device_tracker": "Device Tracker Entity",
-            "wifi_sensor": "Wi-Fi Sensor",
-            "places_entity": "Places Entity (optional)",
-            "category": "Category"
-          }
-        },
-        "select_category": {
-          "title": "Select or create category",
-          "data": {
-            "existing_category": "Existing Category",
-            "new_category": "New Category Name (optional)"
-          }
+  "title": "Enhanced People",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add Enhanced Person",
+        "description": "Configure tracking and context for a person.",
+        "data": {
+          "person": "Person",
+          "device_tracker": "Device Tracker",
+          "wifi_sensor": "Wi-Fi Sensor",
+          "places_entity": "Places Sensor (Optional)",
+          "category": "Category"
         }
       },
-      "error": {
-        "invalid_entity": "Entity not found or invalid",
-        "missing_required": "Missing required fields"
-      },
-      "abort": {
-        "already_configured": "This person is already set up."
-      }
-    },
-    "options": {
-      "step": {
-        "init": {
-          "title": "No configurable options available for Enhanced People"
+      "category": {
+        "title": "Choose or Create Category",
+        "data": {
+          "select_category": "Select Existing Category",
+          "new_category": "Or Create a New Category"
         }
       }
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configure Enhanced People"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "location_summary": {
+        "name": "Location Summary",
+        "device_class": "enum"
+      },
+      "wifi_info": {
+        "name": "Wi-Fi Info",
+        "device_class": "connectivity"
+      },
+      "tracker_info": {
+        "name": "Tracker Info"
+      },
+      "zone_info": {
+        "name": "Zone Info"
+      },
+      "geo_info": {
+        "name": "Geocoded Location Info"
+      },
+      "places_info": {
+        "name": "Places Info"
+      },
+      "activity_info": {
+        "name": "Activity Info"
+      }
+    }
   }
-  
+}

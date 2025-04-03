@@ -4,8 +4,11 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.selector import (  # type: ignore
     selector,
+    EntitySelector,
+    EntitySelectorConfig,
 )
 
 from .const import (
@@ -18,10 +21,27 @@ from .const import (
 )
 
 STEP_USER_DATA_SCHEMA = vol.Schema({
-    vol.Required(CONF_PERSON): selector({"entity": {"domain": "person"}}),
-    vol.Required(CONF_DEVICE_TRACKER): selector({"entity": {"domain": "device_tracker"}}),
-    vol.Optional(CONF_PLACES_ENTITY): selector({"entity": {"domain": "sensor"}}),
-    vol.Required(CONF_WIFI_SENSOR): selector({"entity": {"domain": "sensor"}}),
+    vol.Required(CONF_PERSON): EntitySelector(
+        EntitySelectorConfig(domain="person")
+    ),
+    vol.Required(CONF_DEVICE_TRACKER): EntitySelector(
+        EntitySelectorConfig(
+            domain="device_tracker",
+            integration="mobile_app"
+        )
+    ),
+    vol.Optional(CONF_PLACES_ENTITY): EntitySelector(
+        EntitySelectorConfig(
+            domain="sensor",
+            integration="places"
+        )
+    )
+})
+
+STEP_WIFI_SENSOR_MANUAL_SCHEMA = vol.Schema({
+    vol.Required(CONF_WIFI_SENSOR): EntitySelector(
+        EntitySelectorConfig(domain="sensor")
+    )
 })
 
 STEP_CATEGORY_SELECT_SCHEMA = vol.Schema({
@@ -43,9 +63,37 @@ class EnhancedPeopleConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(self, user_input=None):
         if user_input is not None:
             self._user_input = user_input
-            return await self.async_step_category()
+
+            # Try to detect Wi-Fi sensor automatically
+            entity_registry = er.async_get(self.hass)
+            tracker_entry = entity_registry.async_get(user_input[CONF_DEVICE_TRACKER])
+
+            if tracker_entry and tracker_entry.device_id:
+                device_id = tracker_entry.device_id
+                wifi_candidates = [
+                    e.entity_id for e in entity_registry.entities.values()
+                    if e.device_id == device_id and e.domain == "sensor"
+                    and ("ssid" in e.entity_id or "wi_fi_connection" in e.entity_id)
+                ]
+
+                if wifi_candidates:
+                    self._user_input[CONF_WIFI_SENSOR] = wifi_candidates[0]
+                    return await self.async_step_category()
+
+            # No candidate found, ask user
+            return await self.async_step_wifi_sensor_fallback()
 
         return self.async_show_form(step_id="user", data_schema=STEP_USER_DATA_SCHEMA)
+
+    async def async_step_wifi_sensor_fallback(self, user_input=None):
+        if user_input is not None:
+            self._user_input[CONF_WIFI_SENSOR] = user_input[CONF_WIFI_SENSOR]
+            return await self.async_step_category()
+
+        return self.async_show_form(
+            step_id="wifi_sensor_fallback",
+            data_schema=STEP_WIFI_SENSOR_MANUAL_SCHEMA
+        )
 
     async def async_step_category(self, user_input=None):
         hass: HomeAssistant = self.hass
@@ -69,7 +117,7 @@ class EnhancedPeopleConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="category",
-            data_schema=vol.Schema({vol.Required("selected_category"): vol.In(categories)}),
+            data_schema=vol.Schema({vol.Required("selected_category"): vol.In([str(c) for c in categories])}),
         )
 
     async def async_step_new_category(self, user_input=None):
