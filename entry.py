@@ -12,7 +12,11 @@ from homeassistant.helpers.selector import (  # type: ignore
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from .sensors import create_enhanced_people_sensors
+from .entities import create_enhanced_people_sensors
+
+import logging
+
+_LOGGER = logging.getLogger(__name__)
 
 from .const import (
     DOMAIN,
@@ -64,26 +68,33 @@ class EnhancedPeopleConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._existing_categories = []
 
     async def async_step_user(self, user_input=None):
+        _LOGGER.debug("async_step_user called with input: %s", user_input)
         if user_input is not None:
             self._user_input = user_input
+            _LOGGER.debug("User input stored: %s", self._user_input)
 
             # Try to detect Wi-Fi sensor automatically
-            entity_registry = await er.async_get_registry(self.hass)
+            entity_registry = er.async_get(self.hass)
             tracker_entry = entity_registry.async_get(user_input[CONF_DEVICE_TRACKER])
 
-            if tracker_entry and tracker_entry.device_id:
-                device_id = tracker_entry.device_id
-                wifi_candidates = [
-                    e.entity_id for e in entity_registry.entities.values()
-                    if e.device_id == device_id and e.domain == "sensor"
-                    and ("ssid" in e.entity_id or "wi_fi_connection" in e.entity_id)
-                ]
+            if not tracker_entry or not tracker_entry.device_id:
+                _LOGGER.warning("Device tracker entry not found or missing device_id")
+                return await self.async_step_wifi_sensor_fallback()
 
-                if wifi_candidates:
-                    self._user_input[CONF_WIFI_SENSOR] = wifi_candidates[0]
-                    return await self.async_step_category()
+            device_id = tracker_entry.device_id
+            wifi_candidates = [
+                e.entity_id for e in entity_registry.entities.values()
+                if e.device_id == device_id and e.domain == "sensor"
+                and e.device_class == "connectivity"  # Example: Check for device_class
+            ]
+
+            if wifi_candidates:
+                self._user_input[CONF_WIFI_SENSOR] = wifi_candidates[0]
+                _LOGGER.debug("Wi-Fi sensor detected: %s", wifi_candidates[0])
+                return await self.async_step_category()
 
             # No candidate found, ask user
+            _LOGGER.info("No Wi-Fi sensor candidates found, falling back to manual selection")
             return await self.async_step_wifi_sensor_fallback()
 
         return self.async_show_form(step_id="user", data_schema=STEP_USER_DATA_SCHEMA)
