@@ -1,8 +1,0 @@
-{
-    "name": "Enhanced People",
-    "content_in_root": false,
-    "domains": ["sensor"],
-    "country": "us",
-    "homeassistant": "2023.5.0"
-  }
-  
