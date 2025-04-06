@@ -37,7 +37,7 @@ async def create_enhanced_people_sensors(hass: HomeAssistant, entry: ConfigEntry
         sensors.append(WifiSensor(wifi_entity, person_name, entry_id))
     if places_entity:
         sensors.append(PlacesSensor(places_entity, person_name, entry_id))
-    sensors.append(CategorySensor(person_name, category, entry_id))
+    # Person Type is now only a configuration item, not a sensor
 
     return sensors
 
@@ -114,9 +114,9 @@ class PlacesSensor(BaseEnhancedSensor):
         return state.state if state else STATE_UNKNOWN
 
 
-class CategorySensor(BaseEnhancedSensor):
+class PersonTypeSensor(BaseEnhancedSensor):
     def __init__(self, person_name: str, category: str, entry_id: str):
-        super().__init__(person_name, f"{person_name}_category", entry_id, "Category")
+        super().__init__(person_name, f"{person_name}_person_type", entry_id, "Person Type")
         self._category = category
 
     @property
